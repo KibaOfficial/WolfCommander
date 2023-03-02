@@ -33,45 +33,43 @@ tree = app_commands.CommandTree(client)
 
 # Test Command
 @tree.command(name="test", description="Einfacher Test Command",)
-async def self(interaction: discord.Interaction, name: str):
+async def test(interaction: discord.Interaction, name: str):
     await interaction.response.send_message(f"Moin {name}! Es hat irgendwie funktioniert", ephemeral=True)
-    print(f"[{current_time}] [Log     ] {interaction.user} hat test verwendet {name} erwähnt")
+    print(f"[{current_time}] [Log     ] {interaction.user} hat '{interaction.command.name}' verwendet {name} erwähnt")
 
 
 # Embed Creator
 @tree.command(name='create-embed', description="Embed Builder")
-async def self(interaction: discord.Interaction):
+async def create_embed(interaction: discord.Interaction):
     if interaction.user.guild_permissions.administrator:
         view = EmbedCreator(bot=client)
-        await interaction.response.send_message(embed=view.get_default_embed, view=view, ephemeral=True)
-        print(f"[{current_time}] [Log     ] {interaction.user} hat create-embed verwendet")
+        await interaction.response.send_message(embed=view.get_default_embed, view=view)
+        print(f"[{current_time}] [Log     ] {interaction.user} hat '{interaction.command.name}' verwendet")
     else:
         await interaction.response.send_message("Du hast keine Administrativen Rechte um diesen Befehl zu nutzen."
                                                 "Sollte es sich hierbei um einen fehler handeln kontaktiere bitte"
                                                 "den Bot Owner 'KibaOfficial#2568'")
-        print(f"[{current_time}] [Log     ] {interaction.user} hat versucht 'create-embed' ohne rechte zu verwenden")
+        print(f"[{current_time}] [Log     ] {interaction.user} hat versucht '{interaction.command.name}' ohne rechte zu verwenden")
 
 
 # Ping Test
 @tree.command(name='ping', description='Latenz Test')
-async def self(interaction: discord.Interaction):
+async def ping(interaction: discord.Interaction):
     await interaction.response.send_message(f"Pong! {round(client.latency * 1000)} ms")
     print(f"[{current_time}] [Log     ] {interaction.user} hat ping mit einer latenz von {round(client.latency * 1000)} ms verwendet")
 
 
 # Clear Channel
 @tree.command(name='clear', description='Löscht nachrichten im channel')
-async def self(interaction: discord.Interaction, number: int):
+async def clear(interaction: discord.Interaction, number: int):
     if interaction.user.guild_permissions.administrator:
         await interaction.response.defer()
-        deleted_messages = await interaction.channel.purge(limit=number)
-        confirmation_msg = await interaction.response.send_message(f"{len(deleted_messages)} wurden gelöscht!")
-        await confirmation_msg.delete()
-        print(f"[{current_time}] [Log     ] {interaction.user} hat 'Clear' verwendet und {len(deleted_messages)} gelöscht")
+        await interaction.channel.purge(limit=number)
+        await interaction.channel.send(f"{str(number)} wurden gelöscht!", delete_after=10)
+        print(f"[{current_time}] [Log     ] {interaction.user} hat '{interaction.command.name}' verwendet und {str(number)} Nachrichten gelöscht")
     else:
-        deleted_messages = number
-        interaction.response.send_message("Du hast keine Berechtigungen diesen Command zu verwenden")
-        print(f"[{current_time}] [Log     ] {interaction.user} hat versucht 'Clear' ohne rechte zu verwenden und wollte {len(str(deleted_messages))} löschen")
+        await interaction.response.send_message("Du hast keine Berechtigungen diesen Command zu verwenden")
+        print(f"[{current_time}] [Log     ] {interaction.user} hat versucht '{interaction.command.name}' ohne rechte zu verwenden und wollte {str(number)} Nachrichten löschen")
 
 
 client.run(token)
